@@ -18,7 +18,7 @@ public class MySortedSet<T> implements SortedSet<T> {
     // Helper method; it doesn't override anything
     private int compare(T e1, T e2) {
         // If no comparator, try to cast e1 into a comparable (this might fail); otherwise, use the comparator
-        Comparable<? super T> e1Comparable = (Comparable<? super T>) e1;
+        var e1Comparable = (Comparable<? super T>) e1;
         return comparator == null ? e1Comparable.compareTo(e2) : this.comparator.compare(e1, e2);
     }
 
