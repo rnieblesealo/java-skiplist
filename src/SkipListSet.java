@@ -111,7 +111,7 @@ public class SkipListSet<T> implements SortedSet<T> {
     /** Add to skip list */
     @Override
     public boolean add(T key){
-        SkipListSetItem<T> position = search(key); //
+        SkipListSetItem<T> position = search(key);
         SkipListSetItem<T> q;
 
         int heightOfNewKey = -1;

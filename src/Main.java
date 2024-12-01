@@ -1,17 +1,12 @@
 public class Main {
     public static void main(String[] args){
-        SkipList skipList = new SkipList();
+        SkipListSet<Integer> mySkipList = new SkipListSet<>();
 
-        skipList.skipInsert(3);
-        skipList.skipInsert(5);
-        skipList.skipInsert(12);
-        skipList.skipInsert(8);
+        mySkipList.add(1);
+        mySkipList.add(2);
+        mySkipList.add(3);
+        mySkipList.add(4);
 
-        skipList.printSkipList();
-
-        skipList.remove(12);
-        skipList.remove(8);
-
-        skipList.printSkipList();
+        mySkipList.printSkipList();
     }
 }
