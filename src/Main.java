@@ -1,12 +1,25 @@
+import java.util.Random;
+
 public class Main {
     public static void main(String[] args){
-        SkipListSet<Integer> mySkipList = new SkipListSet<>();
+        SkipListSet<Integer> skipList = new SkipListSet<>();
+        Random random = new Random();
 
-        mySkipList.add(1);
-        mySkipList.add(2);
-        mySkipList.add(3);
-        mySkipList.add(4);
+        for (int i = 0; i < 8; ++i){
+            skipList.add(Math.abs(random.nextInt()) % 32);
+        }
 
-        mySkipList.printSkipList();
+        skipList.printSkipList();
+
+        System.out.println("First: " + skipList.first());
+        System.out.println("Last: " + skipList.last());
+
+        System.out.println("Iterator test (foreach loop):");
+
+        skipList.clear();
+
+        for (Integer num : skipList){
+            System.out.println(num);
+        }
     }
 }

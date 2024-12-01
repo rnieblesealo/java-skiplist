@@ -2,21 +2,21 @@
 
 #### SortedSet
 
-- [ ] add
-- [ ] addAll 
-- [ ] clear 
-- [ ] comparator 
-- [ ] contains 
-- [ ] containsAll
+- [x] add
+- [x] addAll 
+- [x] clear 
+- [x] comparator 
+- [x] contains 
+- [x] containsAll
 - [ ] equals
-- [ ] first
+- [x] first
 - [ ] hashCode 
 - [ ] headSet
-- [ ] isEmpty
-- [ ] iterator 
-- [ ] last 
-- [ ] remove 
-- [ ] removeAll 
+- [x] isEmpty
+- [x] iterator 
+- [x] last 
+- [x] remove 
+- [x] removeAll 
 - [ ] retainAll 
 - [x] size 
     - Keep member for this
@@ -26,8 +26,8 @@
 
 #### Iterator 
 
-- [ ] hasNext
-- [ ] next
+- [x] hasNext
+- [x] next
 - [ ] remove
 
 ### Notes

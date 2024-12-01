@@ -1,7 +1,7 @@
 import java.util.*;
 
 class SkipList {
-    private static class Node {
+    static class Node {
         public Node above;
         public Node below;
         public Node prev;
@@ -57,6 +57,8 @@ class SkipList {
         Node insertPos = search(key);
         Node q;
 
+        System.out.println("got insertpos: " + insertPos.key);
+
         int heightOfNewKey = -1;
 
         // Handle duplicate
@@ -77,14 +79,12 @@ class SkipList {
 
             insertPos = insertPos.above;
 
+            System.out.println(insertPos.key);
+
             q = insertAfterAbove(insertPos, q, key);
         } while (random.nextBoolean());
 
         return q;
-    }
-
-    public Node remoe(int key){
-
     }
 
     private void increaseHeightIfTaller(int heightOfNewKey){
@@ -151,8 +151,74 @@ class SkipList {
             }
         }
     }
+
+    public Node remove(int key){
+        Node toRemove = search(key);
+
+        if (toRemove.key != key){
+            return null;
+        }
+
+        removeRefsToNode(toRemove);
+
+        while (toRemove != null){
+            removeRefsToNode(toRemove);
+
+            if (toRemove.above != null){
+                toRemove = toRemove.above;
+            } else {
+                break;
+            }
+        }
+
+        return toRemove;
+    }
+
+    private void removeRefsToNode(Node toRemove){
+        Node afterToRemove = toRemove.next;
+        Node beforeToRemove = toRemove.prev;
+
+        beforeToRemove.next = afterToRemove;
+        afterToRemove.prev = beforeToRemove;
+    }
+
+    public void print(){
+        StringBuilder sb = new StringBuilder();
+
+        Node starting = head;
+        Node highest = starting;
+
+        int level = height;
+
+        while (highest != null){
+           sb.append("\nLevel: " + level + "\n");
+
+           while (starting != null){
+               sb.append(starting.key);
+
+               if (starting.next != null){
+                   sb.append(" : ");
+               }
+
+               starting = starting.next;
+           }
+
+           highest = highest.below;
+           starting = highest;
+           level--;
+        }
+
+        System.out.println(sb);
+    }
 }
 
 public class SkipListExample {
+    public static void main(String[] args){
+        SkipList list = new SkipList();
 
+        list.insert(3);
+        list.insert(4);
+
+        list.print();
+    }
 }
