@@ -1,3 +1,5 @@
+import javax.management.openmbean.OpenMBeanConstructorInfo;
+import java.lang.reflect.Array;
 import java.util.*;
 
 public class SkipListSet<T> implements SortedSet<T> {
@@ -42,10 +44,21 @@ public class SkipListSet<T> implements SortedSet<T> {
     // No need for <T> after iterator class name because it's already defined in SkipListSet name
     public class SkipListSetIterator implements Iterator<T> {
         private SkipListSetItem<T> curr;
+        private SkipListSetItem<T> last;
 
         public SkipListSetIterator(){
             // Start iterator at lowest level
             curr = lowHead.next;
+        }
+
+        public SkipListSetIterator(SkipListSetItem<T> start){
+            // Start iterator at custom item
+            curr = start;
+
+            // Ensure we're at the lowest level!
+            while (curr.below != null){
+                curr = curr.below;
+            }
         }
 
         @Override
@@ -65,17 +78,27 @@ public class SkipListSet<T> implements SortedSet<T> {
                 throw new NoSuchElementException();
             }
 
-            // Give back the key of curr and move on
+            // Keep track of last node before moving on
+            last = curr;
+
+            // Collect current key
             T currentKey = curr.key;
 
+            // Move on
             curr = curr.next;
 
+            // Return collected current key
             return currentKey;
         }
 
         @Override
         public void remove() {
-            // TODO!
+            // This method gets rid of the last thing iterated over; there must be one!
+            if (last == null){
+                throw new IllegalStateException("Have not iterated over anything yet!");
+            }
+
+            SkipListSet.this.remove(last.key);
         }
     }
 
@@ -247,6 +270,11 @@ public class SkipListSet<T> implements SortedSet<T> {
     /** Add to skip list */
     @Override
     public boolean add(T key){
+        // Passed in nothing
+        if (key == null){
+            return false;
+        }
+
         SkipListSetItem<T> insertPos = search(key);
         SkipListSetItem<T> q;
 
@@ -412,22 +440,117 @@ public class SkipListSet<T> implements SortedSet<T> {
     /** Return subset of skip list, including start and excluding end */
     @Override
     public SkipListSet<T> subSet(T fromElement, T toElement){
-        // TODO!
-        return null;
+        // Empty set
+        if (this.isEmpty()){
+            return new SkipListSet<>();
+        }
+
+        // Destination element is smaller than starting element, which is impossible in sorted set
+        // Give back empty set
+        if (compare(fromElement, toElement) > 0){
+            return new SkipListSet<>();
+        }
+
+        /*
+
+        If fromElement is null but toElement isn't, we can do tailSet
+        If fromElement is not null but toElement is, we can do headSet
+        If both of them are null, return empty set
+        Otherwise, return subset!
+
+        */
+
+        if (fromElement == null && toElement != null){
+            return tailSet(toElement);
+        } else if (fromElement != null && toElement == null){
+            return headSet(fromElement);
+        } else {
+            // Go to start item
+            SkipListSetItem<T> startItem = search(fromElement);
+
+            // If it doesn't exist, return empty set as well
+            if (compare(startItem, fromElement) != 0){
+                return new SkipListSet<>();
+            }
+
+            SkipListSet<T> subSet = new SkipListSet<>();
+
+            // Place iterator at start item
+            SkipListSetIterator startItemIterator = new SkipListSetIterator(startItem);
+            while (startItemIterator.hasNext()){
+                T currentKey = startItemIterator.next();
+
+                // Continue iterating + adding until toElement is reached
+                if (currentKey == toElement){
+                    break;
+                } else {
+                    subSet.add(currentKey);
+                }
+            }
+
+            // Give back subset
+            return subSet;
+        }
     }
 
     /** Return subset including start element and up to the end */
     @Override
     public SkipListSet<T> headSet(T fromElement){
-        // TODO!
-        return null;
+        // Empty set
+        if (this.isEmpty()){
+            return new SkipListSet<>();
+        }
+
+        // Null start element
+        if (fromElement == null){
+            return new SkipListSet<>();
+        }
+
+        // Go to start item
+        SkipListSetItem<T> startItem = search(fromElement);
+
+        // If it doesn't exist, return empty set as well
+        if (compare(startItem, fromElement) != 0){
+            return new SkipListSet<>();
+        }
+
+        // Use an iterator starting at the found starting element to fill in the new head set
+        SkipListSet<T> headSet = new SkipListSet<>();
+
+        SkipListSetIterator startItemIterator = new SkipListSetIterator(startItem);
+        while (startItemIterator.hasNext()){
+            headSet.add(startItemIterator.next());
+        }
+
+        return headSet;
     }
 
     /** Return subset up to and excluding an element */
     @Override
     public SkipListSet<T> tailSet(T toElement){
-        // TODO!
-        return null;
+        // Empty set
+        if (this.isEmpty()){
+            return new SkipListSet<>();
+        }
+
+        // Start new set and add to it until we hit the destination element
+        // If it isn't found, we'll just end up with a copy of the set
+        SkipListSet<T> tailSet = new SkipListSet<>();
+
+        SkipListSetIterator toItemIterator = new SkipListSetIterator();
+        while (toItemIterator.hasNext()){
+            T currentKey = toItemIterator.next();
+
+            // Stop adding items when reached destination element, excluding it
+            // This also means we'll return the full set if toElement is null
+            if (currentKey == toElement){
+                break;
+            } else {
+                tailSet.add(currentKey);
+            }
+        }
+
+        return tailSet;
     }
 
     /** Return first element in skip list */
@@ -464,26 +587,61 @@ public class SkipListSet<T> implements SortedSet<T> {
         T key = (T)o;
         
         SkipListSetItem<T> searchResult = search(key);
-        
+
         if (compare(searchResult, key) == 0){
             return true;
         }
-        
+
         return false;
     }
 
     /** Convert skip list to array of objects */
     @Override
     public Object[] toArray(){
-        // TODO!
-        return null;
+        // Empty list
+        if (isEmpty()){
+            return new Object[0];
+        }
+
+        // Iterate over list, adding to array sequentially
+        Object[] array = new Object[size];
+
+        int i = 0;
+        for (T key : this){
+            array[i] = key;
+            i++;
+        }
+
+        return array;
     }
 
     /** Paste skip list elements to array of generic type */
     @Override
     public <T> T[] toArray(T[] a){
-        // TODO!
-        return null;
+
+
+        // Empty list
+        if (isEmpty()){
+            return (T[]) Array.newInstance(a.getClass().getComponentType(), 0);
+        }
+
+        /*
+
+        If a is too small, we need a new array of this list's size; return that
+        If a has just enough space, copy elements to it and return its reference
+        If a is larger, overwrite the values that we need and leave rest unchanged
+
+        */
+
+        T[] targetArray = a.length < size() ? (T[]) Array.newInstance(a.getClass().getComponentType(), size()) : a;
+
+        int i = 0;
+        for (Object key : this){
+            targetArray[i] = (T)key;
+            i++;
+        }
+
+        return targetArray;
     }
 
     /** Check if skip list contains range of values */
@@ -515,8 +673,18 @@ public class SkipListSet<T> implements SortedSet<T> {
     /** Remove all elements from the skip list except those in c */
     @Override
     public boolean retainAll(Collection<?> c){
-        // TODO!
-        return false;
+        // Iterate over entire list; remove element if not contained in c
+        boolean modified = false;
+
+        Iterator<T> iterator = this.iterator();
+        while (iterator.hasNext()){
+            if (!c.contains(iterator.next())){
+                iterator.remove();
+                modified = true;
+            }
+        }
+
+        return modified;
     }
 
     /** Remove a set of elements from skip list */
@@ -553,9 +721,75 @@ public class SkipListSet<T> implements SortedSet<T> {
         lowTail = topTail;
     }
 
+    /** Check if skip list contains same unique entries */
+    @Override
+    public boolean equals(Object o){
+        // Same reference
+        if (o == this){
+            return true;
+        }
+
+        // If other isn't skip list, they don't match
+        if (!(o instanceof SkipListSet)){
+            return false;
+        }
+
+        // At this point, it's safe to cast the other object into a skip list
+        SkipListSet<?> otherList = (SkipListSet<?>) o;
+
+        if (size() != otherList.size()){
+            return false;
+        }
+
+        // Iterate over both lists, ensuring each element matches
+        Iterator<T> iteratorForThisList = this.iterator();
+        Iterator<?> iteratorForOtherList = otherList.iterator();
+
+        while (iteratorForThisList.hasNext() && iteratorForOtherList.hasNext()){
+            // Mismatch if object references aren't same
+            if (!Objects.equals(iteratorForThisList.next(), iteratorForOtherList.next())){
+
+                return false;
+            }
+        }
+
+        // If everything checks out, our lists are equal!
+        return true;
+    }
+
+    /** Compute hashcode for this skip list */
+    @Override
+    public int hashCode(){
+        // Get unique hash by summing up the individual hashes of every element
+        // Start at 1 so multiplier applies from the get-go
+        int hash = 1;
+        for (T key : this){
+            if (key == null){
+                continue;
+            }
+
+            // Using a multiplier ensures better distribution, reducing collisions!
+            hash *= 31;
+            hash += key.hashCode();
+        }
+
+        return hash;
+    }
+
     /** Re-balances the skip list, randomizing all probabilities again by re-adding... */
-    private void reBalance(){
-       // TODO!
+    public void reBalance(){
+        // Iterate over the list, removing and re-adding as we go
+        Iterator<T> iterator = this.iterator();
+        while (iterator.hasNext()){
+            // Cache current key
+            T currentKey = iterator.next();
+
+            // Remove it
+            iterator.remove();
+
+            // Re-add it
+            this.add(currentKey);
+        }
     }
 
     public void printSkipList(){

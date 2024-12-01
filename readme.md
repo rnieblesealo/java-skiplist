@@ -1,5 +1,11 @@
 ### Todo
 
+#### Assignment-specific
+
+- [x] reBalance
+  - Just reinsert everything into the set in an iterator 
+- [ ] Logarithmic leveling
+
 #### SortedSet
 
 - [x] add
@@ -8,27 +14,28 @@
 - [x] comparator 
 - [x] contains 
 - [x] containsAll
-- [ ] equals
+- [x] equals
 - [x] first
-- [ ] hashCode 
-- [ ] headSet
+- [x] hashCode 
+- [x] headSet
 - [x] isEmpty
 - [x] iterator 
 - [x] last 
 - [x] remove 
 - [x] removeAll 
-- [ ] retainAll 
+- [x] retainAll 
 - [x] size 
     - Keep member for this
-- [ ] subSet 
-- [ ] tailSet
-- [ ] toArray
+- [x] subSet 
+- [x] tailSet
+- [x] toArray
+- [x] toArray (copy)
 
 #### Iterator 
 
 - [x] hasNext
 - [x] next
-- [ ] remove
+- [x] remove
 
 ### Notes
 
